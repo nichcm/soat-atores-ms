@@ -37,7 +37,7 @@ services:
         container_name: estoque-ms-postgres-container
         restart: always
         ports:
-            - 5432:5432
+            - 5433:5432
         env_file:
             - ./containers/postgres/env/.env.dev
         volumes:
