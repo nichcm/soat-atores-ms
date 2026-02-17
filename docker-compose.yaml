@@ -1,12 +1,12 @@
 services:
     nginx:
         image: nginx
-        container_name: estoque-ms-nginx-container
+        container_name: atores-ms-nginx-container
         ports:
             - 8080:80
         networks:
-            - soat-estoque-ms-net
-        hostname: estoque-ms-nginx-hostname
+            - soat-atores-ms-net
+        hostname: atores-ms-nginx-hostname
         restart: on-failure:3
         volumes:
             - ./containers/nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -16,8 +16,8 @@ services:
                 condition: service_started
 
     microservice:
-        container_name: estoque-ms-container
-        hostname: estoque-ms-hostname
+        container_name: atores-ms-container
+        hostname: atores-ms-hostname
         build:
             context: .
             dockerfile: ./images/php/Dockerfile
@@ -27,14 +27,14 @@ services:
         expose:
             - 9000
         networks:
-            - soat-estoque-ms-net
+            - soat-atores-ms-net
         depends_on:
             postgres:
                 condition: service_healthy
 
     postgres:
         image: postgres:17.5
-        container_name: estoque-ms-postgres-container
+        container_name: atores-ms-postgres-container
         restart: always
         ports:
             - 5433:5432
@@ -43,7 +43,7 @@ services:
         volumes:
             - pgdata:/var/lib/postgresql/data
         networks:
-            - soat-estoque-ms-net
+            - soat-atores-ms-net
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 5s
@@ -55,6 +55,6 @@ volumes:
     pgdata:
 
 networks:
-    soat-estoque-ms-net:
-        name: soat-estoque-ms-net
+    soat-atores-ms-net:
+        name: soat-atores-ms-net
         driver: bridge
