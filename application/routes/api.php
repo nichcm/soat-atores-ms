@@ -3,9 +3,9 @@
 use App\Http\Middleware\JsonWebTokenMiddleware;
 use Illuminate\Support\Facades\Route;
 
-require_once __DIR__ . "/cliente.php";
-require_once __DIR__ . "/veiculo.php";
-require_once __DIR__ . "/usuario.php";
+require __DIR__ . "/cliente.php";
+require __DIR__ . "/veiculo.php";
+require __DIR__ . "/usuario.php";
 
 Route::get(
     "ping",

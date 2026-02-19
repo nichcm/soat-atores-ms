@@ -9,6 +9,7 @@ use App\Domain\UseCase\Usuario\UpdateUseCase;
 use App\Exception\DomainHttpException;
 use App\Infrastructure\Gateway\UsuarioGateway;
 use DateTimeImmutable;
+use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -22,6 +23,12 @@ class UpdateUseCaseTest extends TestCase
         parent::setUp();
         $this->gatewayMock = $this->createMock(UsuarioGateway::class);
         $this->senhaHash = password_hash('senha123', PASSWORD_BCRYPT);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     private function criarEntidadeFake(): Entidade
@@ -102,6 +109,20 @@ class UpdateUseCaseTest extends TestCase
         $this->expectException(\TypeError::class);
 
         $useCase = new UpdateUseCase($this->gatewayMock);
+        $useCase->exec('uuid-usuario-123', ['nome' => 'Novo Nome']);
+    }
+
+    public function test_lanca_excecao_de_dominio_quando_atualizar_retorna_nao_array(): void
+    {
+        $gatewayMock = Mockery::mock(UsuarioGateway::class);
+        $gatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn($this->criarEntidadeFake());
+        $gatewayMock->shouldReceive('atualizar')->andThrow(new DomainHttpException('Erro ao atualizar usuário', 500));
+
+        $this->expectException(DomainHttpException::class);
+        $this->expectExceptionMessage('Erro ao atualizar usuário');
+        $this->expectExceptionCode(500);
+
+        $useCase = new UpdateUseCase($gatewayMock);
         $useCase->exec('uuid-usuario-123', ['nome' => 'Novo Nome']);
     }
 }

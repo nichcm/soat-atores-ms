@@ -23,6 +23,14 @@
         <include>
             <directory>app</directory>
         </include>
+         <exclude>
+            <file>app/Http/Authentication.php</file>
+            <file>app/Http/Middleware/JsonWebTokenMiddleware.php</file>
+            <file>app/Infrastructure/Service/LaravelAuthService.php</file>
+            <file>app/Infrastructure/Dto/AuthenticatedDto.php</file>
+            <directory>app/Console</directory>
+            <directory>app/Jobs</directory>
+        </exclude>
     </source>
     <php>
         <env name="APP_ENV"

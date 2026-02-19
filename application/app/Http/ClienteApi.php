@@ -163,7 +163,7 @@ class ClienteApi
         }
 
         if (is_null($res)) {
-            $this->presenter->setStatusCode(Response::HTTP_NOT_FOUND)->toPresent([]);
+            return $this->presenter->setStatusCode(Response::HTTP_NOT_FOUND)->toPresent([]);
         }
 
         return $this->presenter->setStatusCode(Response::HTTP_OK)->toPresent($res);

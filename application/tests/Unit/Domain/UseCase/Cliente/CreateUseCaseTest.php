@@ -9,6 +9,7 @@ use App\Domain\UseCase\Cliente\CreateUseCase;
 use App\Exception\DomainHttpException;
 use App\Infrastructure\Gateway\ClienteGateway;
 use DateTimeImmutable;
+use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,6 +21,12 @@ class CreateUseCaseTest extends TestCase
     {
         parent::setUp();
         $this->gatewayMock = $this->createMock(ClienteGateway::class);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     private function criarEntidadeFake(): Entidade
@@ -173,5 +180,25 @@ class CreateUseCaseTest extends TestCase
         );
 
         $useCase->exec($this->gatewayMock);
+    }
+
+    public function test_lanca_excecao_de_dominio_quando_criar_retorna_nao_array(): void
+    {
+        $gatewayMock = Mockery::mock(ClienteGateway::class);
+        $gatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn(null);
+        $gatewayMock->shouldReceive('criar')->andThrow(new DomainHttpException('Erro ao cadastrar', 500));
+
+        $this->expectException(DomainHttpException::class);
+        $this->expectExceptionMessage('Erro ao cadastrar');
+        $this->expectExceptionCode(500);
+
+        $useCase = new CreateUseCase(
+            nome: 'Maria Silva',
+            documento: '12345678901',
+            email: 'maria@email.com',
+            fone: '11999999999',
+        );
+
+        $useCase->exec($gatewayMock);
     }
 }

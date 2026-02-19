@@ -11,6 +11,7 @@ use App\Exception\DomainHttpException;
 use App\Infrastructure\Gateway\ClienteGateway;
 use App\Infrastructure\Gateway\VeiculoGateway;
 use DateTimeImmutable;
+use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +27,12 @@ class CreateUseCaseTest extends TestCase
         $this->veiculoGatewayMock = $this->createMock(VeiculoGateway::class);
         $this->clienteGatewayMock = $this->createMock(ClienteGateway::class);
         $this->anoValido = (int) date('Y');
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     private function criarClienteFake(): ClienteEntidade
@@ -215,5 +222,30 @@ class CreateUseCaseTest extends TestCase
         );
 
         $useCase->exec($this->veiculoGatewayMock, $this->clienteGatewayMock);
+    }
+
+    public function test_lanca_excecao_de_dominio_quando_criar_retorna_nao_array(): void
+    {
+        $clienteGatewayMock = Mockery::mock(ClienteGateway::class);
+        $clienteGatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn($this->criarClienteFake());
+        $clienteGatewayMock->shouldReceive('obterIdNumerico')->andReturn(42);
+
+        $veiculoGatewayMock = Mockery::mock(VeiculoGateway::class);
+        $veiculoGatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn(null);
+        $veiculoGatewayMock->shouldReceive('criar')->andThrow(new DomainHttpException('Erro ao cadastrar', 500));
+
+        $this->expectException(DomainHttpException::class);
+        $this->expectExceptionMessage('Erro ao cadastrar');
+        $this->expectExceptionCode(500);
+
+        $useCase = new CreateUseCase(
+            marca: 'Honda',
+            modelo: 'Civic',
+            placa: 'XYZ9999',
+            ano: $this->anoValido,
+            clienteUuid: 'uuid-cliente-dono',
+        );
+
+        $useCase->exec($veiculoGatewayMock, $clienteGatewayMock);
     }
 }

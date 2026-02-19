@@ -8,6 +8,7 @@ use App\Domain\Entity\Usuario\Entidade;
 use App\Domain\UseCase\Usuario\CreateUseCase;
 use App\Exception\DomainHttpException;
 use App\Infrastructure\Gateway\UsuarioGateway;
+use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +22,12 @@ class CreateUseCaseTest extends TestCase
         parent::setUp();
         $this->gatewayMock = $this->createMock(UsuarioGateway::class);
         $this->senhaHash = password_hash('senha123', PASSWORD_BCRYPT);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     public function test_cria_usuario_com_sucesso(): void
@@ -150,5 +157,25 @@ class CreateUseCaseTest extends TestCase
         $resultado = $useCase->exec($this->gatewayMock);
 
         $this->assertTrue($resultado->ativo);
+    }
+
+    public function test_lanca_excecao_de_dominio_quando_criar_retorna_nao_array(): void
+    {
+        $gatewayMock = Mockery::mock(UsuarioGateway::class);
+        $gatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn(null);
+        $gatewayMock->shouldReceive('criar')->andThrow(new DomainHttpException('Erro ao cadastrar usuário', 500));
+
+        $this->expectException(DomainHttpException::class);
+        $this->expectExceptionMessage('Erro ao cadastrar usuário');
+        $this->expectExceptionCode(500);
+
+        $useCase = new CreateUseCase(
+            nome: 'João Alves',
+            email: 'joao@email.com',
+            senha: $this->senhaHash,
+            perfil: 'atendente',
+        );
+
+        $useCase->exec($gatewayMock);
     }
 }

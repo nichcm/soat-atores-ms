@@ -9,6 +9,7 @@ use App\Domain\UseCase\Veiculo\UpdateUseCase;
 use App\Exception\DomainHttpException;
 use App\Infrastructure\Gateway\VeiculoGateway;
 use DateTimeImmutable;
+use Mockery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -22,6 +23,12 @@ class UpdateUseCaseTest extends TestCase
         parent::setUp();
         $this->gatewayMock = $this->createMock(VeiculoGateway::class);
         $this->anoValido = (int) date('Y');
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     private function criarVeiculoFake(): Entidade
@@ -102,6 +109,20 @@ class UpdateUseCaseTest extends TestCase
         $this->expectException(\TypeError::class);
 
         $useCase = new UpdateUseCase($this->gatewayMock);
+        $useCase->exec('uuid-veiculo-123', ['marca' => 'Honda']);
+    }
+
+    public function test_lanca_excecao_de_dominio_quando_atualizar_retorna_nao_array(): void
+    {
+        $gatewayMock = Mockery::mock(VeiculoGateway::class);
+        $gatewayMock->shouldReceive('encontrarPorIdentificadorUnico')->andReturn($this->criarVeiculoFake());
+        $gatewayMock->shouldReceive('atualizar')->andThrow(new DomainHttpException('Erro na atualização', 500));
+
+        $this->expectException(DomainHttpException::class);
+        $this->expectExceptionMessage('Erro na atualização');
+        $this->expectExceptionCode(500);
+
+        $useCase = new UpdateUseCase($gatewayMock);
         $useCase->exec('uuid-veiculo-123', ['marca' => 'Honda']);
     }
 }

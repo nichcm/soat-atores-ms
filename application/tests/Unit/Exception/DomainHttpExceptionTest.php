@@ -10,39 +10,37 @@ use PHPUnit\Framework\TestCase;
 
 class DomainHttpExceptionTest extends TestCase
 {
-    public function test_e_instancia_de_domain_exception(): void
+    public function test_cria_excecao_com_mensagem_e_codigo(): void
     {
-        $e = new DomainHttpException('Erro de domínio', 400);
-        $this->assertInstanceOf(DomainException::class, $e);
+        $exception = new DomainHttpException('Erro de dominio', 400);
+
+        $this->assertEquals('Erro de dominio', $exception->getMessage());
+        $this->assertEquals(400, $exception->getCode());
     }
 
-    public function test_mensagem_e_codigo_sao_passados_corretamente(): void
+    public function test_cria_excecao_com_codigo_padrao_zero(): void
     {
-        $e = new DomainHttpException('Recurso não encontrado', 404);
+        $exception = new DomainHttpException('Erro sem codigo');
 
-        $this->assertEquals('Recurso não encontrado', $e->getMessage());
-        $this->assertEquals(404, $e->getCode());
+        $this->assertEquals('Erro sem codigo', $exception->getMessage());
+        $this->assertEquals(0, $exception->getCode());
     }
 
-    public function test_codigo_padrao_e_zero(): void
+    public function test_herda_de_domain_exception(): void
     {
-        $e = new DomainHttpException('Erro genérico');
-        $this->assertEquals(0, $e->getCode());
+        $exception = new DomainHttpException('Erro', 500);
+
+        $this->assertInstanceOf(DomainException::class, $exception);
     }
 
-    public function test_pode_ser_lancada_e_capturada(): void
+    public function test_excecao_com_codigos_http_comuns(): void
     {
-        $this->expectException(DomainHttpException::class);
-        $this->expectExceptionMessage('Operação inválida');
-        $this->expectExceptionCode(400);
+        $bad_request = new DomainHttpException('Bad Request', 400);
+        $not_found = new DomainHttpException('Not Found', 404);
+        $internal_error = new DomainHttpException('Internal Error', 500);
 
-        throw new DomainHttpException('Operação inválida', 400);
-    }
-
-    public function test_pode_ser_capturada_como_domain_exception(): void
-    {
-        $this->expectException(DomainException::class);
-
-        throw new DomainHttpException('Erro de domínio', 500);
+        $this->assertEquals(400, $bad_request->getCode());
+        $this->assertEquals(404, $not_found->getCode());
+        $this->assertEquals(500, $internal_error->getCode());
     }
 }
