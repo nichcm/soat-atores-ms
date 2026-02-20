@@ -9,9 +9,9 @@ chown -R www-data:www-data /var/www/html/storage \
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
-# mkdir -p /tmp
-# touch /tmp/xdebug.log
-# chmod 777 /tmp/xdebug.log
+mkdir -p /tmp
+touch /tmp/xdebug.log
+chmod 777 /tmp/xdebug.log
 
 echo "📦 Instalando dependências"
 mkdir -p vendor
