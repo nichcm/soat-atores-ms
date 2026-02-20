@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Domain\Entity\Usuario\Entidade as UsuarioEntidade;
 use App\Domain\Entity\Usuario\RepositorioInterface as UsuarioRepositorio;
+use DateTimeImmutable;
 use Mockery;
 use Tests\TestCase;
 
@@ -14,6 +16,20 @@ class UsuarioApiTest extends TestCase
     {
         Mockery::close();
         parent::tearDown();
+    }
+
+    private function criarEntidade(string $uuid = 'uuid-usuario-123'): UsuarioEntidade
+    {
+        return new UsuarioEntidade(
+            uuid: $uuid,
+            nome: 'João Silva',
+            email: 'joao@email.com',
+            senha: password_hash('senha123', PASSWORD_BCRYPT),
+            ativo: true,
+            perfil: 'atendente',
+            criadoEm: new DateTimeImmutable('2024-01-01 10:00:00'),
+            atualizadoEm: new DateTimeImmutable('2024-01-01 10:00:00'),
+        );
     }
 
     private function dadosCriacao(string $uuid = 'uuid-usuario-123'): array
@@ -92,7 +108,7 @@ class UsuarioApiTest extends TestCase
         $repositorioMock = Mockery::mock(UsuarioRepositorio::class);
         $repositorioMock->shouldReceive('encontrarPorIdentificadorUnico')
             ->with($uuid, 'uuid')
-            ->andReturn(true);
+            ->andReturn($this->criarEntidade($uuid));
         $repositorioMock->shouldReceive('atualizar')->andReturn(array_merge(
             $this->dadosCriacao($uuid),
             ['nome' => 'João Atualizado']
@@ -127,7 +143,7 @@ class UsuarioApiTest extends TestCase
         $repositorioMock = Mockery::mock(UsuarioRepositorio::class);
         $repositorioMock->shouldReceive('encontrarPorIdentificadorUnico')
             ->with($uuid, 'uuid')
-            ->andReturn(true);
+            ->andReturn($this->criarEntidade($uuid));
         $repositorioMock->shouldReceive('deletar')->with($uuid)->andReturn(true);
 
         $this->app->instance(UsuarioRepositorio::class, $repositorioMock);

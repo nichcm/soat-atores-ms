@@ -212,7 +212,7 @@ class VeiculoApiTest extends TestCase
         $veiculoRepositorioMock = Mockery::mock(VeiculoRepositorio::class);
         $veiculoRepositorioMock->shouldReceive('encontrarPorIdentificadorUnico')
             ->with($uuid, 'uuid')
-            ->andReturn(true);
+            ->andReturn($this->criarVeiculoEntidade($uuid));
         $veiculoRepositorioMock->shouldReceive('deletar')->with($uuid)->andReturn(true);
 
         $clienteRepositorioMock = Mockery::mock(ClienteRepositorio::class);

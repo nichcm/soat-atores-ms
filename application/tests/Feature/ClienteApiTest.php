@@ -164,6 +164,9 @@ class ClienteApiTest extends TestCase
         $uuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
         $repositorioMock = Mockery::mock(ClienteRepositorio::class);
+        $repositorioMock->shouldReceive('encontrarPorIdentificadorUnico')
+            ->with($uuid, 'uuid')
+            ->andReturn($this->criarEntidade($uuid));
         $repositorioMock->shouldReceive('deletar')->with($uuid)->andReturn(true);
 
         $this->app->instance(ClienteRepositorio::class, $repositorioMock);
